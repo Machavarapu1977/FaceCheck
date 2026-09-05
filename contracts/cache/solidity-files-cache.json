@@ -1,0 +1,41 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\Users\\krish\\Desktop\\FaceCheck\\contracts\\contracts\\FaceVerificationRegistry.sol": {
+      "lastModificationDate": 1788332463731,
+      "contentHash": "afe37c3da6c55c7be3a2ca5bc4b3adb3",
+      "sourceName": "contracts/FaceVerificationRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "FaceVerificationRegistry"
+      ]
+    }
+  }
+}
