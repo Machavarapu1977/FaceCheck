@@ -92,13 +92,18 @@ class FaceEmbedder(BaseFaceEmbedder):
 
         raw_cos = float(np.dot(feat1, feat2) / (norm1 * norm2))
 
-        # Smooth continuous scaling mapping raw hypersphere cosine [-0.10, 1.0] -> [0.0, 1.0]:
-        # Exact match (1.0) -> 100%
-        # Strong biometric match (0.85) -> ~86%
-        # Moderately similar / group (0.65) -> ~68%
-        # Distinct person (0.35) -> ~41%
-        # Very distinct / poster (0.10) -> ~18%
-        scaled = (raw_cos + 0.10) / 1.10
-        calibrated = float(np.clip(scaled, 0.0, 1.0))
+        # Calibrated SFace similarity mapping:
+        # Standard OpenCV SFace cosine identity decision threshold is 0.363.
+        # - Exact match (1.0) -> 100%
+        # - Same person / high resemblance (raw_cos >= 0.363) -> 70% - 100% (Verified Match)
+        # - Moderate visual similarity / different person (0.15 <= raw_cos < 0.363) -> 35% - 69%
+        # - Distinct faces (raw_cos < 0.15) -> 5% - 35%
+        if raw_cos >= 0.363:
+            # Scale [0.363, 1.0] -> [0.70, 1.00]
+            calibrated = 0.70 + 0.30 * (raw_cos - 0.363) / (1.0 - 0.363)
+        else:
+            # Scale [0.0, 0.363] -> [0.10, 0.69]
+            calibrated = 0.10 + 0.59 * max(0.0, raw_cos) / 0.363
 
+        calibrated = float(np.clip(calibrated, 0.0, 1.0))
         return round(calibrated, 4)

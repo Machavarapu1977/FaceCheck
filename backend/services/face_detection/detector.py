@@ -32,7 +32,7 @@ class OpenCVFaceDetector(BaseFaceDetector):
             except Exception as e:
                 self._detector = None
 
-    def detect_faces(self, image: np.ndarray) -> List[Tuple[int, int, int, int]]:
+    def detect_faces(self, image: np.ndarray, score_threshold: float = 0.5) -> List[Tuple[int, int, int, int]]:
         if image is None or image.size == 0:
             return []
 
@@ -41,6 +41,7 @@ class OpenCVFaceDetector(BaseFaceDetector):
         if self._detector is not None:
             try:
                 self._detector.setInputSize((w, h))
+                self._detector.setScoreThreshold(score_threshold)
                 _, faces = self._detector.detect(image)
                 results = []
                 if faces is not None:
@@ -53,12 +54,27 @@ class OpenCVFaceDetector(BaseFaceDetector):
                         fh = min(fh, h - y)
                         if fw > 0 and fh > 0:
                             results.append((x, y, fw, fh))
+                
+                # If no face found on small image, try upscaling 2x
+                if not results and (w < 250 or h < 250):
+                    upscaled = cv2.resize(image, (w * 2, h * 2), interpolation=cv2.INTER_CUBIC)
+                    self._detector.setInputSize((w * 2, h * 2))
+                    self._detector.setScoreThreshold(0.35)
+                    _, up_faces = self._detector.detect(upscaled)
+                    if up_faces is not None:
+                        for face in up_faces:
+                            x, y, fw, fh = int(face[0] // 2), int(face[1] // 2), int(face[2] // 2), int(face[3] // 2)
+                            x = max(0, x)
+                            y = max(0, y)
+                            fw = min(fw, w - x)
+                            fh = min(fh, h - y)
+                            if fw > 0 and fh > 0:
+                                results.append((x, y, fw, fh))
+
                 # Sort by area descending (largest face first)
                 results.sort(key=lambda b: b[2] * b[3], reverse=True)
                 return results
             except Exception:
                 pass
 
-        # Fallback: try multi-pass detection using equalizeHist + DNN params
-        # If detector not available, return empty (no fake bounding boxes)
         return []

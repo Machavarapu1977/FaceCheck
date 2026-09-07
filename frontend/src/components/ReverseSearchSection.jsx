@@ -223,7 +223,7 @@ export default function ReverseSearchSection({ searchInfo, topCandidates, bestMa
       {/* Candidate cards */}
       {topCandidates && topCandidates.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
-          {topCandidates.slice(0, 6).map((candidate, i) => (
+          {topCandidates.map((candidate, i) => (
             <CandidateCard key={i} candidate={candidate} isTop={i === 0} />
           ))}
         </div>

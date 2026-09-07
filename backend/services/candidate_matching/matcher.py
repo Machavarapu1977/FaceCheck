@@ -78,7 +78,7 @@ class CandidateMatcher:
         candidate_img = self.download_candidate_image(image_url)
         
         if candidate_img is not None:
-            faces = self.detector.detect_faces(candidate_img)
+            faces = self.detector.detect_faces(candidate_img, score_threshold=0.45)
             if len(faces) > 0:
                 # Compare against all detected faces in the candidate image (e.g. group photos, band posters)
                 best_sim = 0.0
@@ -92,6 +92,16 @@ class CandidateMatcher:
                 face_sim = round(float(best_sim), 4)
                 cosine_similarity = face_sim
                 similarity_calc_status = "CALCULATED"
+            else:
+                # Fallback: candidate image might be a direct tight face portrait thumbnail
+                try:
+                    cand_embedding = self.embedder.generate_embedding(candidate_img)
+                    sim_val = self.embedder.calculate_similarity(input_embedding, cand_embedding)
+                    face_sim = round(float(sim_val), 4)
+                    cosine_similarity = face_sim
+                    similarity_calc_status = "CALCULATED"
+                except Exception:
+                    pass
 
         if similarity_calc_status == "CALCULATED":
             combined_score = round(
